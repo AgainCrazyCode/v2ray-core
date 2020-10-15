@@ -3,9 +3,7 @@ package scenarios
 import (
 	"context"
 	"fmt"
-	"github.com/google/go-cmp/cmp/cmpopts"
 	"io"
-	"strings"
 	"testing"
 	"time"
 
@@ -267,9 +265,7 @@ func TestCommanderAddRemoveUser(t *testing.T) {
 	common.Must(err)
 	defer CloseAllServers(servers)
 
-	if err := testTCPConn(clientPort, 1024, time.Second*5)(); err != io.EOF &&
-		/*We might wish to drain the connection*/
-		(err != nil && !strings.HasSuffix(err.Error(), "i/o timeout")) {
+	if err := testTCPConn(clientPort, 1024, time.Second*5)(); err != io.EOF {
 		t.Fatal("expected error: ", err)
 	}
 
@@ -472,7 +468,7 @@ func TestCommanderStats(t *testing.T) {
 	if r := cmp.Diff(sresp.Stat, &statscmd.Stat{
 		Name:  name,
 		Value: 10240 * 1024,
-	}, cmpopts.IgnoreUnexported(statscmd.Stat{})); r != "" {
+	}); r != "" {
 		t.Error(r)
 	}
 
@@ -483,7 +479,7 @@ func TestCommanderStats(t *testing.T) {
 	if r := cmp.Diff(sresp.Stat, &statscmd.Stat{
 		Name:  name,
 		Value: 0,
-	}, cmpopts.IgnoreUnexported(statscmd.Stat{})); r != "" {
+	}); r != "" {
 		t.Error(r)
 	}
 

@@ -2,7 +2,7 @@
 
 package dispatcher
 
-//go:generate go run v2ray.com/core/common/errors/errorgen
+//go:generate errorgen
 
 import (
 	"context"
@@ -20,7 +20,6 @@ import (
 	"v2ray.com/core/features/outbound"
 	"v2ray.com/core/features/policy"
 	"v2ray.com/core/features/routing"
-	routing_session "v2ray.com/core/features/routing/session"
 	"v2ray.com/core/features/stats"
 	"v2ray.com/core/transport"
 	"v2ray.com/core/transport/pipe"
@@ -266,8 +265,7 @@ func (d *DefaultDispatcher) routedDispatch(ctx context.Context, link *transport.
 	}
 
 	if d.router != nil && !skipRoutePick {
-		if route, err := d.router.PickRoute(routing_session.AsRoutingContext(ctx)); err == nil {
-			tag := route.GetOutboundTag()
+		if tag, err := d.router.PickRoute(ctx); err == nil {
 			if h := d.ohm.GetHandler(tag); h != nil {
 				newError("taking detour [", tag, "] for [", destination, "]").WriteToLog(session.ExportIDToError(ctx))
 				handler = h

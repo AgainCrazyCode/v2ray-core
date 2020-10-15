@@ -92,8 +92,6 @@ type Instance struct {
 	features           []features.Feature
 	featureResolutions []resolution
 	running            bool
-
-	ctx context.Context
 }
 
 func AddInboundHandler(server *Instance, config *InboundHandlerConfig) error {
@@ -106,7 +104,7 @@ func AddInboundHandler(server *Instance, config *InboundHandlerConfig) error {
 	if !ok {
 		return newError("not an InboundHandler")
 	}
-	if err := inboundManager.AddHandler(server.ctx, handler); err != nil {
+	if err := inboundManager.AddHandler(context.Background(), handler); err != nil {
 		return err
 	}
 	return nil
@@ -132,7 +130,7 @@ func AddOutboundHandler(server *Instance, config *OutboundHandlerConfig) error {
 	if !ok {
 		return newError("not an OutboundHandler")
 	}
-	if err := outboundManager.AddHandler(server.ctx, handler); err != nil {
+	if err := outboundManager.AddHandler(context.Background(), handler); err != nil {
 		return err
 	}
 	return nil
@@ -159,47 +157,27 @@ func RequireFeatures(ctx context.Context, callback interface{}) error {
 // The instance is not started at this point.
 // To ensure V2Ray instance works properly, the config must contain one Dispatcher, one InboundHandlerManager and one OutboundHandlerManager. Other features are optional.
 func New(config *Config) (*Instance, error) {
-	var server = &Instance{ctx: context.Background()}
+	var server = &Instance{}
 
-	err, done := initInstanceWithConfig(config, server)
-	if done {
-		return nil, err
-	}
-
-	return server, nil
-}
-
-func NewWithContext(config *Config, ctx context.Context) (*Instance, error) {
-	var server = &Instance{ctx: ctx}
-
-	err, done := initInstanceWithConfig(config, server)
-	if done {
-		return nil, err
-	}
-
-	return server, nil
-}
-
-func initInstanceWithConfig(config *Config, server *Instance) (error, bool) {
 	if config.Transport != nil {
 		features.PrintDeprecatedFeatureWarning("global transport settings")
 	}
 	if err := config.Transport.Apply(); err != nil {
-		return err, true
+		return nil, err
 	}
 
 	for _, appSettings := range config.App {
 		settings, err := appSettings.GetInstance()
 		if err != nil {
-			return err, true
+			return nil, err
 		}
 		obj, err := CreateObject(server, settings)
 		if err != nil {
-			return err, true
+			return nil, err
 		}
 		if feature, ok := obj.(features.Feature); ok {
 			if err := server.AddFeature(feature); err != nil {
-				return err, true
+				return nil, err
 			}
 		}
 	}
@@ -217,23 +195,24 @@ func initInstanceWithConfig(config *Config, server *Instance) (error, bool) {
 	for _, f := range essentialFeatures {
 		if server.GetFeature(f.Type) == nil {
 			if err := server.AddFeature(f.Instance); err != nil {
-				return err, true
+				return nil, err
 			}
 		}
 	}
 
 	if server.featureResolutions != nil {
-		return newError("not all dependency are resolved."), true
+		return nil, newError("not all dependency are resolved.")
 	}
 
 	if err := addInboundHandlers(server, config.Inbound); err != nil {
-		return err, true
+		return nil, err
 	}
 
 	if err := addOutboundHandlers(server, config.Outbound); err != nil {
-		return err, true
+		return nil, err
 	}
-	return nil, false
+
+	return server, nil
 }
 
 // Type implements common.HasType.

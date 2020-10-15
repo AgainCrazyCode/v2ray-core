@@ -11,7 +11,6 @@ import (
 	"v2ray.com/core/app/proxyman"
 	"v2ray.com/core/app/stats"
 	"v2ray.com/core/common/serial"
-	"v2ray.com/core/transport/internet/xtls"
 )
 
 var (
@@ -20,9 +19,7 @@ var (
 		"http":          func() interface{} { return new(HttpServerConfig) },
 		"shadowsocks":   func() interface{} { return new(ShadowsocksServerConfig) },
 		"socks":         func() interface{} { return new(SocksServerConfig) },
-		"vless":         func() interface{} { return new(VLessInboundConfig) },
 		"vmess":         func() interface{} { return new(VMessInboundConfig) },
-		"trojan":        func() interface{} { return new(TrojanServerConfig) },
 		"mtproto":       func() interface{} { return new(MTProtoServerConfig) },
 	}, "protocol", "settings")
 
@@ -31,10 +28,8 @@ var (
 		"freedom":     func() interface{} { return new(FreedomConfig) },
 		"http":        func() interface{} { return new(HttpClientConfig) },
 		"shadowsocks": func() interface{} { return new(ShadowsocksClientConfig) },
-		"socks":       func() interface{} { return new(SocksClientConfig) },
-		"vless":       func() interface{} { return new(VLessOutboundConfig) },
 		"vmess":       func() interface{} { return new(VMessOutboundConfig) },
-		"trojan":      func() interface{} { return new(TrojanClientConfig) },
+		"socks":       func() interface{} { return new(SocksClientConfig) },
 		"mtproto":     func() interface{} { return new(MTProtoClientConfig) },
 		"dns":         func() interface{} { return new(DnsOutboundConfig) },
 	}, "protocol", "settings")
@@ -62,7 +57,6 @@ type SniffingConfig struct {
 	DestOverride *StringList `json:"destOverride"`
 }
 
-// Build implements Buildable.
 func (c *SniffingConfig) Build() (*proxyman.SniffingConfig, error) {
 	var p []string
 	if c.DestOverride != nil {
@@ -188,9 +182,6 @@ func (c *InboundDetourConfig) Build() (*core.InboundHandlerConfig, error) {
 		if err != nil {
 			return nil, err
 		}
-		if ss.SecurityType == serial.GetMessageType(&xtls.Config{}) && !strings.EqualFold(c.Protocol, "vless") {
-			return nil, newError("XTLS only supports VLESS for now.")
-		}
 		receiverSettings.StreamSettings = ss
 	}
 	if c.SniffingConfig != nil {
@@ -258,9 +249,6 @@ func (c *OutboundDetourConfig) Build() (*core.OutboundHandlerConfig, error) {
 		if err != nil {
 			return nil, err
 		}
-		if ss.SecurityType == serial.GetMessageType(&xtls.Config{}) && !strings.EqualFold(c.Protocol, "vless") {
-			return nil, newError("XTLS only supports VLESS for now.")
-		}
 		senderSettings.StreamSettings = ss
 	}
 
@@ -273,15 +261,7 @@ func (c *OutboundDetourConfig) Build() (*core.OutboundHandlerConfig, error) {
 	}
 
 	if c.MuxSettings != nil {
-		ms := c.MuxSettings.Build()
-		if ms != nil && ms.Enabled {
-			if ss := senderSettings.StreamSettings; ss != nil {
-				if ss.SecurityType == serial.GetMessageType(&xtls.Config{}) {
-					return nil, newError("XTLS doesn't support Mux for now.")
-				}
-			}
-		}
-		senderSettings.MultiplexSettings = ms
+		senderSettings.MultiplexSettings = c.MuxSettings.Build()
 	}
 
 	settings := []byte("{}")
@@ -306,7 +286,6 @@ func (c *OutboundDetourConfig) Build() (*core.OutboundHandlerConfig, error) {
 
 type StatsConfig struct{}
 
-// Build implements Buildable.
 func (c *StatsConfig) Build() (*stats.Config, error) {
 	return &stats.Config{}, nil
 }

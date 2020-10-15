@@ -2,7 +2,7 @@
 
 package command
 
-//go:generate go run v2ray.com/core/common/errors/errorgen
+//go:generate errorgen
 
 import (
 	"context"
@@ -32,8 +32,6 @@ func (s *LoggerServer) RestartLogger(ctx context.Context, request *RestartLogger
 	}
 	return &RestartLoggerResponse{}, nil
 }
-
-func (s *LoggerServer) mustEmbedUnimplementedLoggerServiceServer() {}
 
 type service struct {
 	v *core.Instance

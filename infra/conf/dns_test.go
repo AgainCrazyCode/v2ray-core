@@ -20,12 +20,9 @@ func init() {
 	wd, err := os.Getwd()
 	common.Must(err)
 
-	if _, err := os.Stat(platform.GetAssetLocation("geoip.dat")); err != nil && os.IsNotExist(err) {
-		common.Must(filesystem.CopyFile(platform.GetAssetLocation("geoip.dat"), filepath.Join(wd, "..", "..", "release", "config", "geoip.dat")))
-	}
+	common.Must(filesystem.CopyFile(platform.GetAssetLocation("geoip.dat"), filepath.Join(wd, "..", "..", "release", "config", "geoip.dat")))
 
-	geositeFilePath := filepath.Join(wd, "geosite.dat")
-	os.Setenv("v2ray.location.asset", wd)
+	geositeFilePath := platform.GetAssetLocation("geosite.dat")
 	geositeFile, err := os.OpenFile(geositeFilePath, os.O_CREATE|os.O_WRONLY, 0600)
 	common.Must(err)
 	defer geositeFile.Close()
@@ -49,7 +46,6 @@ func TestDnsConfigParsing(t *testing.T) {
 	geositePath := platform.GetAssetLocation("geosite.dat")
 	defer func() {
 		os.Remove(geositePath)
-		os.Unsetenv("v2ray.location.asset")
 	}()
 
 	parserCreator := func() func(string) (proto.Message, error) {
@@ -96,12 +92,6 @@ func TestDnsConfigParsing(t *testing.T) {
 							{
 								Type:   dns.DomainMatchingType_Subdomain,
 								Domain: "v2ray.com",
-							},
-						},
-						OriginalRules: []*dns.NameServer_OriginalRule{
-							{
-								Rule: "domain:v2ray.com",
-								Size: 1,
 							},
 						},
 					},

@@ -919,6 +919,7 @@ func TestVMessKCPLarge(t *testing.T) {
 
 	servers, err := InitializeServerConfigs(serverConfig, clientConfig)
 	common.Must(err)
+	defer CloseAllServers(servers)
 
 	var errg errgroup.Group
 	for i := 0; i < 2; i++ {
@@ -927,11 +928,6 @@ func TestVMessKCPLarge(t *testing.T) {
 	if err := errg.Wait(); err != nil {
 		t.Error(err)
 	}
-
-	defer func() {
-		<-time.After(5 * time.Second)
-		CloseAllServers(servers)
-	}()
 }
 
 func TestVMessGCMMux(t *testing.T) {
@@ -1165,6 +1161,7 @@ func TestVMessGCMMuxUDP(t *testing.T) {
 
 	servers, err := InitializeServerConfigs(serverConfig, clientConfig)
 	common.Must(err)
+	defer CloseAllServers(servers)
 
 	for range "abcd" {
 		var errg errgroup.Group
@@ -1177,9 +1174,4 @@ func TestVMessGCMMuxUDP(t *testing.T) {
 		}
 		time.Sleep(time.Second)
 	}
-
-	defer func() {
-		<-time.After(5 * time.Second)
-		CloseAllServers(servers)
-	}()
 }

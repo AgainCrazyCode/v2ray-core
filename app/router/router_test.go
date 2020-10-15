@@ -10,7 +10,6 @@ import (
 	"v2ray.com/core/common/net"
 	"v2ray.com/core/common/session"
 	"v2ray.com/core/features/outbound"
-	routing_session "v2ray.com/core/features/routing/session"
 	"v2ray.com/core/testing/mocks"
 )
 
@@ -45,9 +44,9 @@ func TestSimpleRouter(t *testing.T) {
 	}))
 
 	ctx := session.ContextWithOutbound(context.Background(), &session.Outbound{Target: net.TCPDestination(net.DomainAddress("v2ray.com"), 80)})
-	route, err := r.PickRoute(routing_session.AsRoutingContext(ctx))
+	tag, err := r.PickRoute(ctx)
 	common.Must(err)
-	if tag := route.GetOutboundTag(); tag != "test" {
+	if tag != "test" {
 		t.Error("expect tag 'test', bug actually ", tag)
 	}
 }
@@ -86,9 +85,9 @@ func TestSimpleBalancer(t *testing.T) {
 	}))
 
 	ctx := session.ContextWithOutbound(context.Background(), &session.Outbound{Target: net.TCPDestination(net.DomainAddress("v2ray.com"), 80)})
-	route, err := r.PickRoute(routing_session.AsRoutingContext(ctx))
+	tag, err := r.PickRoute(ctx)
 	common.Must(err)
-	if tag := route.GetOutboundTag(); tag != "test" {
+	if tag != "test" {
 		t.Error("expect tag 'test', bug actually ", tag)
 	}
 }
@@ -121,9 +120,9 @@ func TestIPOnDemand(t *testing.T) {
 	common.Must(r.Init(config, mockDns, nil))
 
 	ctx := session.ContextWithOutbound(context.Background(), &session.Outbound{Target: net.TCPDestination(net.DomainAddress("v2ray.com"), 80)})
-	route, err := r.PickRoute(routing_session.AsRoutingContext(ctx))
+	tag, err := r.PickRoute(ctx)
 	common.Must(err)
-	if tag := route.GetOutboundTag(); tag != "test" {
+	if tag != "test" {
 		t.Error("expect tag 'test', bug actually ", tag)
 	}
 }
@@ -156,9 +155,9 @@ func TestIPIfNonMatchDomain(t *testing.T) {
 	common.Must(r.Init(config, mockDns, nil))
 
 	ctx := session.ContextWithOutbound(context.Background(), &session.Outbound{Target: net.TCPDestination(net.DomainAddress("v2ray.com"), 80)})
-	route, err := r.PickRoute(routing_session.AsRoutingContext(ctx))
+	tag, err := r.PickRoute(ctx)
 	common.Must(err)
-	if tag := route.GetOutboundTag(); tag != "test" {
+	if tag != "test" {
 		t.Error("expect tag 'test', bug actually ", tag)
 	}
 }
@@ -190,9 +189,9 @@ func TestIPIfNonMatchIP(t *testing.T) {
 	common.Must(r.Init(config, mockDns, nil))
 
 	ctx := session.ContextWithOutbound(context.Background(), &session.Outbound{Target: net.TCPDestination(net.LocalHostIP, 80)})
-	route, err := r.PickRoute(routing_session.AsRoutingContext(ctx))
+	tag, err := r.PickRoute(ctx)
 	common.Must(err)
-	if tag := route.GetOutboundTag(); tag != "test" {
+	if tag != "test" {
 		t.Error("expect tag 'test', bug actually ", tag)
 	}
 }

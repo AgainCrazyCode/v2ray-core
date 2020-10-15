@@ -2,7 +2,6 @@ package conf_test
 
 import (
 	"encoding/json"
-	"github.com/google/go-cmp/cmp/cmpopts"
 	"os"
 	"testing"
 
@@ -217,7 +216,7 @@ func TestUserParsing(t *testing.T) {
 	if r := cmp.Diff(nUser, &protocol.User{
 		Level: 1,
 		Email: "love@v2ray.com",
-	}, cmpopts.IgnoreUnexported(protocol.User{})); r != "" {
+	}); r != "" {
 		t.Error(r)
 	}
 }

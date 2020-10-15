@@ -19,8 +19,9 @@ import (
 
 // MemoryAccount is an account type converted from Account.
 type MemoryAccount struct {
-	Cipher Cipher
-	Key    []byte
+	Cipher      Cipher
+	Key         []byte
+	OneTimeAuth Account_OneTimeAuth
 }
 
 // Equals implements protocol.Account.Equals().
@@ -87,8 +88,9 @@ func (a *Account) AsAccount() (protocol.Account, error) {
 		return nil, newError("failed to get cipher").Base(err)
 	}
 	return &MemoryAccount{
-		Cipher: cipher,
-		Key:    passwordToCipherKey([]byte(a.Password), cipher.KeySize()),
+		Cipher:      cipher,
+		Key:         passwordToCipherKey([]byte(a.Password), cipher.KeySize()),
+		OneTimeAuth: a.Ota,
 	}, nil
 }
 

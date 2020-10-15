@@ -51,19 +51,15 @@ func (t *Policy) Build() (*policy.Policy, error) {
 }
 
 type SystemPolicy struct {
-	StatsInboundUplink    bool `json:"statsInboundUplink"`
-	StatsInboundDownlink  bool `json:"statsInboundDownlink"`
-	StatsOutboundUplink   bool `json:"statsOutboundUplink"`
-	StatsOutboundDownlink bool `json:"statsOutboundDownlink"`
+	StatsInboundUplink   bool `json:"statsInboundUplink"`
+	StatsInboundDownlink bool `json:"statsInboundDownlink"`
 }
 
 func (p *SystemPolicy) Build() (*policy.SystemPolicy, error) {
 	return &policy.SystemPolicy{
 		Stats: &policy.SystemPolicy_Stats{
-			InboundUplink:    p.StatsInboundUplink,
-			InboundDownlink:  p.StatsInboundDownlink,
-			OutboundUplink:   p.StatsOutboundUplink,
-			OutboundDownlink: p.StatsOutboundDownlink,
+			InboundUplink:   p.StatsInboundUplink,
+			InboundDownlink: p.StatsInboundDownlink,
 		},
 	}, nil
 }

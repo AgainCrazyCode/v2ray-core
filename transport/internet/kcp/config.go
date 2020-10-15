@@ -4,6 +4,7 @@ package kcp
 
 import (
 	"crypto/cipher"
+
 	"v2ray.com/core/common"
 	"v2ray.com/core/transport/internet"
 )
@@ -59,10 +60,7 @@ func (c *Config) GetReadBufferSize() uint32 {
 }
 
 // GetSecurity returns the security settings.
-func (c *Config) GetSecurity() (cipher.AEAD, error) {
-	if c.Seed != nil {
-		return NewAEADAESGCMBasedOnSeed(c.Seed.Seed), nil
-	}
+func (*Config) GetSecurity() (cipher.AEAD, error) {
 	return NewSimpleAuthenticator(), nil
 }
 

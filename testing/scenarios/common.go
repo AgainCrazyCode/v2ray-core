@@ -1,7 +1,6 @@
 package scenarios
 
 import (
-	"bytes"
 	"crypto/rand"
 	"fmt"
 	"io"
@@ -14,6 +13,7 @@ import (
 	"time"
 
 	"github.com/golang/protobuf/proto"
+	"github.com/google/go-cmp/cmp"
 	"v2ray.com/core"
 	"v2ray.com/core/app/dispatcher"
 	"v2ray.com/core/app/proxyman"
@@ -196,13 +196,9 @@ func testTCPConn2(conn net.Conn, payloadSize int, timeout time.Duration) func() 
 		if err != nil {
 			return err
 		}
-		_ = response
-
-		if r := bytes.Compare(response, xor(payload)); r != 0 {
+		if r := cmp.Diff(response, xor(payload)); r != "" {
 			return errors.New(r)
 		}
-
 		return nil
-
 	}
 }
